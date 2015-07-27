@@ -63,7 +63,7 @@ describe('', function() {
 
     var requestWithSession = request.defaults({jar: true});
 
-var xbeforeEach = function(){};
+    var xbeforeEach = function(){
       // create a user that we can then log-in with
       new User({
           'username': 'Phillip',
@@ -83,7 +83,7 @@ var xbeforeEach = function(){};
           done();
         });
       });
-    });
+    };
 
     it('Only shortens valid urls, returning a 404 - Not found for invalid urls', function(done) {
       var options = {
@@ -137,12 +137,12 @@ var xbeforeEach = function(){};
       it('Fetches the link url title', function (done) {
         requestWithSession(options, function(error, res, body) {
           db.knex('urls')
-            .where('title', '=', 'Funny animal pictures, funny animals, funniest dogs')
+            .where('title', '=','Funny pictures of animals, funny dog pictures')
             .then(function(urls) {
               if (urls['0'] && urls['0']['title']) {
                 var foundTitle = urls['0']['title'];
               }
-              expect(foundTitle).to.equal('Funny animal pictures, funny animals, funniest dogs');
+              expect(foundTitle).to.equal('Funny pictures of animals, funny dog pictures');
               done();
             });
         });
@@ -295,9 +295,9 @@ var xbeforeEach = function(){};
           'username': 'Phillip',
           'password': 'Phillip'
       }).save().then(function(){
-        done()
+        done();
       });
-    })
+    });
 
     it('Logs in existing users', function(done) {
       var options = {
