@@ -63,7 +63,7 @@ describe('', function() {
 
     var requestWithSession = request.defaults({jar: true});
 
-    var xbeforeEach = function(){
+    var beforeEach = function(){
       // create a user that we can then log-in with
       new User({
           'username': 'Phillip',
@@ -203,6 +203,7 @@ describe('', function() {
         };
 
         requestWithSession(options, function(error, res, body) {
+          // console.log("RES", body)
           expect(body).to.include('"title":"Funny animal pictures, funny animals, funniest dogs"');
           expect(body).to.include('"code":"' + link.get('code') + '"');
           done();
@@ -213,7 +214,7 @@ describe('', function() {
 
   }); // 'Link creation'
 
-  xdescribe('Privileged Access:', function(){
+  describe('Privileged Access:', function(){
 
     it('Redirects to login page if a user tries to access the main page and is not signed in', function(done) {
       request('http://127.0.0.1:4568/', function(error, res, body) {
