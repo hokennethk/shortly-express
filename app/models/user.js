@@ -10,16 +10,39 @@ var User = db.Model.extend({
     salt: ""
   },
 
-  initialize: function(params) {
-    console.log("CONSTRCUTOR", params['username'], params['password']);
-    // make salt
-    var that = this;
+  // initialize: function(params) {
+  //   console.log("CONSTRCUTOR", params['username'], params['password']);
+  //   // make salt
+  //   var that = this;
+  //   bcrypt.genSalt(null, function(err, salt) {
+  //     if (err) {
+  //       throw err;
+  //     }
+  //     // hash password + salt
+  //     bcrypt.hash(params.password, salt, null, function(error, hashed) {
+  //       if (error) {
+  //         throw error;
+  //       }
+  //       // store into database
+  //       // that.username = params['username'];
+  //       // that.password = hashed;
+  //       // that.salt = salt;
+  //       console.log("MODEL CREATED", that);
+  //       that.save({username: params['username'], password: hashed, salt: salt})
+  //     });
+  //   });
+  // },
+
+  createHash: function(password, callback, saltArg) {
+
     bcrypt.genSalt(null, function(err, salt) {
       if (err) {
         throw err;
       }
+
+      if (saltArg) salt = saltArg;
       // hash password + salt
-      bcrypt.hash(params.password, salt, null, function(error, hashed) {
+      bcrypt.hash(password, salt, null, function(error, hashed) {
         if (error) {
           throw error;
         }
@@ -27,10 +50,12 @@ var User = db.Model.extend({
         // that.username = params['username'];
         // that.password = hashed;
         // that.salt = salt;
-        console.log("MODEL CREATED", that);
-        that.save({username: params['username'], password: hashed, salt: salt})
+        // console.log("MODEL CREATED", that);
+        callback(hashed, salt);
       });
     });
+
+
   }
 });
 

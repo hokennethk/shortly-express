@@ -10,6 +10,7 @@ var Links = require('./app/collections/links');
 var Link = require('./app/models/link');
 var Click = require('./app/models/click');
 var utils = require('./lib/utility');
+var session = require('express-session');
 
 var app = express();
 
@@ -23,10 +24,61 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
+app.use(session({
+  secret: 'get rekt'
+}));
+
 
 app.get('/', utils.restrictHandler,
 function(req, res) {
   res.render('index');
+});
+
+app.post('/login', 
+function(req, res) {
+  // console.log('req', req);
+  console.log(req.body);
+  var username = req.body.username;
+  var password = req.body.password;
+
+  new User({ username: username }).fetch().then(function(user) {
+    if (user) {
+      // redirect to login
+      var salt = user.get('salt');
+
+      user.createHash(password, function(hashed){
+        var passHash = hashed;
+        if (hashed === user.get('password')) {
+          console.log('SUPA HOT FIREE');
+          req.session.regenerate(function() {
+            req.session.user = username;
+            console.log('VERIFIED');
+            res.redirect('/');
+          });
+        } else {
+          console.log('REJECTED');
+          console.log('Ouch?');
+        }
+
+      }, salt);
+      // if(username == 'demo' && password == 'demo'){
+      //   req.session.regenerate(function(){
+      //     req.session.user = username;
+      //     res.redirect('/');
+      //   });
+      // } else {
+      //   res.redirect('login');
+      // } 
+
+    } else {
+      // create new user
+      res.redirect('/signup');
+
+    }
+  });
+
+
+
 });
 
 app.get('/login', 
@@ -41,6 +93,12 @@ function(req, res) {
   // console.log('req', req);
   res.render('signup');
 
+});
+
+app.get('/logout' ,
+function(req, res){
+  req.session.destroy();
+  res.redirect('/login');
 });
 
 app.get('/create', utils.restrictHandler,
@@ -103,28 +161,33 @@ app.post('/signup', function(req, res) {
   var username = req.body["username"];
   var password = req.body["password"];
 
-  //check for user
-  Users
-    .query({where: {username: username}})
-    .fetch()
-    .then(function(collection){
-      console.log("THIS IS THE MODEL", collection.models.length);
-      if (!collection.models.length){
-        console.log(collection.models.length);
-        console.log("NO MODEL");
-        Users.add({username: username, password: password});
-        // console.log("MODEL CREATED");
-        
-      } else {
-        console.log("MODEL FOUND", collection.models.length);
-      }
-    });
-
-  console.log("TOTAL LENGTH, SIR", Users.models.length);
+  new User({ username: username }).fetch().then(function(user) {
+    if (user) {
+      // redirect to login
+      res.redirect('/login');
+    } else {
+      // create new user
 
 
+      var user = new User();
+      user.set('username', username);
+      // set password and salt
+      user.createHash(password, function(hashed, salt) {
+        user.set('password', hashed);
+        user.set('salt', salt);
+        user.save().then(function(newUser) {
+          console.log('done');
+          res.send('<p>Accout has been created :) <a href= "/login">GO HERE</a></p>')
+          Users.add(newUser);
+        });
+      });
+
+    }
+  });
 
 });
+
+
 
 
 /************************************************************/
