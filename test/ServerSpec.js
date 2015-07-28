@@ -40,10 +40,10 @@ describe('', function() {
       .del()
       .catch(function(error) {
         // uncomment when writing authentication tests
-        // throw {
-        //   type: 'DatabaseError',
-        //   message: 'Failed to create test setup data'
-        // };
+        throw {
+          type: 'DatabaseError',
+          message: 'Failed to create test setup data'
+        };
       });
 
     // delete user Phillip from db so it can be created later for the test
@@ -52,10 +52,10 @@ describe('', function() {
       .del()
       .catch(function(error) {
         // uncomment when writing authentication tests
-        // throw {
-        //   type: 'DatabaseError',
-        //   message: 'Failed to create test setup data'
-        // };
+        throw {
+          type: 'DatabaseError',
+          message: 'Failed to create test setup data'
+        };
       });
   });
 
@@ -63,7 +63,7 @@ describe('', function() {
 
     var requestWithSession = request.defaults({jar: true});
 
-    var beforeEach = function(){
+    var beforeEach = function(done){
       // create a user that we can then log-in with
       new User({
           'username': 'Phillip',
@@ -75,7 +75,8 @@ describe('', function() {
           'uri': 'http://127.0.0.1:4568/login',
           'json': {
             'username': 'Phillip',
-            'password': 'Phillip'
+            'password': 'Phillip',
+            'salt'    : 'Phillip'
           }
         };
         // login via form and save session info
@@ -95,6 +96,7 @@ describe('', function() {
       };
 
       requestWithSession(options, function(error, res, body) {
+        console.log("SHOOOOOOORT", error, res, body);
         // res comes from the request module, and may not follow express conventions
         expect(res.statusCode).to.equal(404);
         done();
@@ -189,7 +191,10 @@ describe('', function() {
           'uri': 'http://127.0.0.1:4568/' + link.get('code')
         };
 
+        console.log("Shortcode redirects to correct url: LINK CODE", link.get('code'))
+
         requestWithSession(options, function(error, res, body) {
+          console.log("SHORTCODE REDIRECTS", res)
           var currentLocation = res.request.href;
           expect(currentLocation).to.equal('http://roflzoo.com/');
           done();
@@ -203,7 +208,6 @@ describe('', function() {
         };
 
         requestWithSession(options, function(error, res, body) {
-          // console.log("RES", body)
           expect(body).to.include('"title":"Funny animal pictures, funny animals, funniest dogs"');
           expect(body).to.include('"code":"' + link.get('code') + '"');
           done();
